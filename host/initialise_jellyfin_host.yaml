@@ -20,12 +20,11 @@
   - name: Install System Tools
     apt:
       name:
-        - speedtest-cli
-        - iperf3
         - htop
         - intel-gpu-tools
         - vainfo
         - nfs-common
+        - rpcbind
       state: present
   - name: Create directories for NFS share
     ansible.builtin.file:
