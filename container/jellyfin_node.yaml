@@ -1,0 +1,37 @@
+---
+- name: Setup Packages for Nodes
+  hosts: jellyfin
+  tasks:
+    - name: Install node packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gpg
+          - lsb-release
+          - apt-transport-https
+          - software-properties-common
+          - bash-completion
+        state: present
+    - name: Adding Jellyfin Repo using bash
+      ansible.builtin.shell: | # Ansible for many commands
+        curl -fsSL https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/debian-jellyfin.gpg
+        echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list
+        add-apt-repository universe
+      args:
+        executable: /bin/bash
+    - name: Installing Jellyfin intel-gpu-tools and vainfo
+      apt:
+        name:
+          - jellyfin
+          - intel-gpu-tools
+          - vainfo
+        state: present
+    - name: Make sure jellyfin is running
+      systemd:
+        name: jellyfin.service
+        state: started
+    - name: Add jellyfin user to render and kvm groups
+      ansible.builtin.shell: |
+        usermod -aG render jellyfin
+        usermod -aG kvm jellyfin

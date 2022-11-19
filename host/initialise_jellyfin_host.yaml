@@ -1,0 +1,52 @@
+---
+- hosts: jellyfin_host
+  become: yes
+  vars_files:
+    - passwd.yml
+  vars:
+    ansible_become_pass: "{{ my_cluster_sudo_pass }}" 
+    jelly_cont: 'jellyfin' # Update this name for the name of your LXD jellyfin container
+    nfs_mnt: '/mnt/test' # mount point
+    nfs_share: '192.168.1.15:/nfs/share' # nfs network share
+
+  pre_tasks:
+  - name: Update cache
+    apt:
+      update_cache: yes
+      cache_valid_time: 86400
+      upgrade: yes
+
+  tasks:
+  - name: Install System Tools
+    apt:
+      name:
+        - speedtest-cli
+        - iperf3
+        - htop
+        - intel-gpu-tools
+        - vainfo
+        - nfs-common
+      state: present
+  - name: Create directories for NFS share
+    ansible.builtin.file:
+      path: "{{ nfs_mnt }}"
+      state: directory
+  - name: Add NFS to /etc/fstab & mount
+    ansible.builtin.mount:
+      src: "{{ nfs_share }}"
+      path: "{{ nfs_mnt }}"
+      opts: ro,users
+      fstype: nfs
+      state: mounted
+  - name: Configure NFS shares and GPU
+    shell: |
+      lxc config device add "{{ jelly_cont }}" nfsshare disk source="{{ nfs_mnt }}" path="{{ nfs_mnt }}"
+      grp_id="$(awk -F: '/render/{print $3}' /etc/group)"
+      lxc config device add "{{ jelly_cont }}" gpu gpu gid="$grp_id"
+      lxc config set "{{ jelly_cont }}" security.nesting=true
+      lxc restart "{{ jelly_cont }}"
+    register: sysmon
+  - debug: var=sysmon.stdout_lines
+
+
+
