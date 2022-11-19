@@ -46,7 +46,7 @@ Notable areas here include the variables..
 
 If you just need to share a drive that's already connected via USB etc, then you could remove some of this, but i've included it as it's something i use.
 
-Now you can run this command which will hopefully get the host and containe ready...
+Now you can run this command which will hopefully get the host and container ready...
 
 ```bash
 ansible-playbook -i inventory initialise_jellyfin_host.yaml --ask-vault-pass
@@ -65,12 +65,12 @@ lxc config set core.trust_password mypassword
 lxc remote add lxd_host_ip mylxd
 lxc remote switch mylxd
 
-So, lxd_host_ip will be the server ip which will be running your lxd containers
-mylxd is just the name of the host, this can be anything, but you'll use this to switch.
+# So, lxd_host_ip will be the server ip which will be running your lxd containers
+# mylxd is just the name of the host, this can be anything, but you'll use this to switch.
 
 lxc remote list
 
-This will show you available lxd machines to connect to, including your local desktop/laptop.
+# This will show you available lxd machines to connect to, including your local desktop/laptop.
 ```
 
 The first command is run on the LXD host and you set a password for your laptop/desktop to connect.
